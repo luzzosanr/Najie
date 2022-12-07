@@ -8,11 +8,19 @@ public class Growing : MonoBehaviour
     float timeSinceBegining = 0f;
     GameObject tree;
     GameObject disruption; // Refference to the disruption
+
+    GameObject terrain;
     
     // Start is called before the first frame update
     void Start()
     {
         this.tree = this.FindChildByTag("GrowingTree");
+    }
+
+    public void setParameters(GameObject terrain, GameObject disruption)
+    {
+        this.terrain = terrain;
+        this.disruption = disruption;
     }
 
     // Update is called once per frame
@@ -43,7 +51,7 @@ public class Growing : MonoBehaviour
 
     void EndGrowing()
     {
-        this.tree.transform.parent = null;
+        this.tree.transform.parent = this.terrain.transform;
         this.tree.transform.tag = "Tree";
         this.disruption.GetComponent<Disruption>().ReduceRadius();
         Destroy(this.gameObject);

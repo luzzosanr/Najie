@@ -1,13 +1,12 @@
 using UnityEngine;
 using System.Collections;
 
-public class Character : BaseCharacter {
-
-    GameObject moving; // Object being moved by the character
+public class Character : BaseCharacter 
+{
     [Header("Disruption")]
-    public GameObject disruptionPrefab; // Prefab of the disruption
-    GameObject disruption;
+    public GameObject disruption;
     GameObject lanterne;
+
     [Header("Plant")]
     public GameObject preview; // Preview of the tree
 
@@ -16,11 +15,6 @@ public class Character : BaseCharacter {
     {
         base.Start();
         this.lanterne = this.transform.Find("Main Camera").Find("Lanterne").gameObject;
-
-        // Spawn disruption
-        // this.disruption = Instantiate(disruptionPrefab, transform.position + new Vector3(0, 100f, 0), Quaternion.identity, this.transform.parent);
-        // this.disruption.GetComponent<Disruption>().SetType("sunflower");
-
 	}
 	
 	// Update is called once per frame
@@ -28,11 +22,11 @@ public class Character : BaseCharacter {
     {
         base.Update();
 
-        if (this.disruption != null && this.disruption.GetComponent<Disruption>().type == "tree")
+        if (this.disruption.activeSelf && this.disruption.GetComponent<Disruption>().type == "tree")
         {
             this.TreePlantationUpdate();
         }
-        else if (this.disruption != null && this.disruption.GetComponent<Disruption>().type == "sunflower")
+        else if (this.disruption.activeSelf && this.disruption.GetComponent<Disruption>().type == "sunflower")
         {
             this.SunflowerPlantationUpdate();
         }
@@ -71,19 +65,12 @@ public class Character : BaseCharacter {
 
     void SunflowerPlantationUpdate()
     {
-        // Set fog unity fog on
-        if (this.disruption.GetComponent<Disruption>().IsInZone(this.transform.position))
-        {
-            RenderSettings.fog = true;
-        }
-        else if (RenderSettings.fog)
-        {
-            RenderSettings.fog = false;
-        }
-
         GameObject GetNearestSunflower(float max = float.MaxValue)
         {
-            // Get the position of the nearest sunflower or null if too far
+            /**
+            * Get the position of the nearest sunflower or null if too far
+            */
+
             GameObject[] sunflowers = GameObject.FindGameObjectsWithTag("Sunflower");
             GameObject nearestSunflower = null;
             float nearestDistance = max;
@@ -92,7 +79,7 @@ public class Character : BaseCharacter {
                 Vector3 difference = sunflower.transform.position - transform.position;
                 difference.y = 0;
                 float distance = difference.magnitude;
-                if (distance < nearestDistance && sunflower.transform.Find("Tournesol_pas_ok").gameObject.activeSelf && this.disruption.GetComponent<Disruption>().IsInSaveZone(sunflower.transform.position))
+                if (distance < nearestDistance && sunflower.transform.Find("Tournesol_pas_ok").gameObject.activeSelf && this.disruption.GetComponent<Disruption>().IsInSaveZone(sunflower.transform.localPosition))
                 {
                     nearestSunflower = sunflower;
                     nearestDistance = distance;
@@ -102,8 +89,18 @@ public class Character : BaseCharacter {
             return nearestSunflower;
         }
 
+        // Set fog unity fog on
+        if (this.disruption.GetComponent<Disruption>().IsInZone(this.transform.localPosition))
+        {
+            RenderSettings.fog = true;
+        }
+        else if (RenderSettings.fog)
+        {
+            RenderSettings.fog = false;
+        }
+
         // True if the player can heal a sunflower
-        bool canHeal = this.disruption.GetComponent<Disruption>().IsInSaveZone(this.transform.position);
+        bool canHeal = this.disruption.GetComponent<Disruption>().IsInSaveZone(this.transform.localPosition);
 
         if (canHeal)
         {
@@ -118,9 +115,8 @@ public class Character : BaseCharacter {
             }
             else if (sunflower != null)
             {
-                float healingTime = 3f;
                 compo.Progress(Time.deltaTime);
-                if (compo.timeSinceBegining > healingTime)
+                if (compo.IsHealed())
                 {
                     Destroy(compo);
                     this.disruption.GetComponent<Disruption>().ReduceRadius("Sunflower");

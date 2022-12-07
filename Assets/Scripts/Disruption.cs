@@ -4,6 +4,15 @@ using UnityEngine;
 
 class Disruption : MonoBehaviour
 {
+    /**
+    * Empty GameObject that contains the disruption
+    * Childs of this object are:
+    * - Rift: Rift is the donut
+    * - DisruptionSphere: Sphere that grows for visual
+    * - VisualDisruption: Object that is displayed on the ground (For testing purpose)
+    * - Zone: Zone where the disruption is active (not an object, defined by the radius), y isn't taken into account
+    */
+
     [Header("Parameters")]
     public float sphereRadius;
     public float sphereExplosionSpeed;
@@ -11,41 +20,46 @@ class Disruption : MonoBehaviour
     public float plantableDistance; // Proportion of the radius where seeds are plantable
     public float reductionFactor; // Factor by which the radius is reduced when a tree is planted
     public float minTime; // TimeSinceBegining that if lower, disruption is destroyed
+    public float maxTime; // TimeSinceBegining can't go over this value
+    public float initTime; // TimeSinceBegining at the beginning of the disruption
     public string type;
 
     [Header("References")]
-    public GameObject disruptionSpherePrefab;
     public GameObject treePrefab;
     
     // Dinamic objects
     GameObject disruptionSphere;
-    GameObject visualDisruption; 
-    GameObject night;
+    GameObject visualDisruption; // For testing purpose
 
     [Header("Variables")]
-    float timeSinceBegining;
+    public float timeSinceBegining;
 
     void Start()
     {
-        // Spawn diruption sphere
-        this.disruptionSphere = Instantiate(disruptionSpherePrefab, transform.position - new Vector3(0, 30f, 0), Quaternion.identity);
-        this.disruptionSphere.transform.SetParent(transform);
-        this.disruptionSphere.transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius) * 2;
-
-        this.timeSinceBegining = minTime;
-
+        this.disruptionSphere = this.transform.Find("Sphere").gameObject;
+        
         this.CreateVisualDisruption();
     }
 
-    public void SetType(string type)
+    void OnEnable()
     {
-        this.type = type;
+        this.timeSinceBegining = this.initTime;
+    }
+
+    void OnDisable()
+    {
+        // Code run whenever a player clears a disruption
     }
 
     void Update()
     {
         // Update time
         timeSinceBegining += Time.deltaTime;
+
+        if (timeSinceBegining > maxTime)
+        {
+            timeSinceBegining = maxTime;
+        }
 
 
         // Update sphere
@@ -72,7 +86,6 @@ class Disruption : MonoBehaviour
 
     void TreesUpdate()
     {
-        
         // Set all tree in range of disruption as dead
         GameObject[] trees = GameObject.FindGameObjectsWithTag("Tree");
         foreach (GameObject tree in trees)
@@ -92,11 +105,6 @@ class Disruption : MonoBehaviour
 
     void SunflowersUpdate()
     {
-        if (night == null)
-        {
-            CreateNight();
-        }
-
         // Set all sunflower in range of disruption as dead
         GameObject[] sunflowers = GameObject.FindGameObjectsWithTag("Sunflower");
         foreach (GameObject sunflower in sunflowers)
@@ -112,17 +120,6 @@ class Disruption : MonoBehaviour
                 this.SetSunflowerAsDead(sunflower);
             }
         }
-    }
-
-    void CreateNight()
-    {
-        // Create cylinder with black material with transparency
-        this.night = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        Destroy(this.night.GetComponent<CapsuleCollider>());
-        this.night.GetComponent<Renderer>().material.color = new Color(0, 0, 0, 0.2f);
-        this.night.transform.SetParent(transform);
-        this.night.transform.localPosition = new Vector3(0f, - this.transform.position.y, 0f);
-        this.night.transform.localScale = new Vector3(0f, 50f, 0f);
     }
 
     void SetTreeAsDead(GameObject tree)
@@ -152,7 +149,7 @@ class Disruption : MonoBehaviour
     public bool IsInSaveZone(Vector3 position)
     {
         // returns whether a tree can be planted for exemple on the given coordinates (in the save zone)
-        Vector3 difference = position - transform.position;
+        Vector3 difference = position - transform.localPosition;
         difference.y = 0;
         float distance = difference.magnitude;
         return distance <= timeSinceBegining * disruptionSpeed && distance > timeSinceBegining * disruptionSpeed * (1 - plantableDistance);
@@ -161,10 +158,11 @@ class Disruption : MonoBehaviour
     public void PlantTree(Vector3 position)
     {
         GameObject growingTree = new GameObject("GrowingTree");
+        growingTree.transform.parent = this.transform;
         growingTree.transform.localScale = new Vector3(1f, 1f, 1f) * 0.05f;
         Instantiate(this.treePrefab, new Vector3(0f, 0f, 0f), Quaternion.identity, growingTree.transform).transform.tag = "GrowingTree";
-        growingTree.transform.position = position;
-        growingTree.AddComponent<Growing>().SetDisruption(this.gameObject);
+        growingTree.transform.localPosition = position;
+        growingTree.AddComponent<Growing>().setParameters(this.transform.parent.gameObject, this.gameObject);
     }
 
     public void ReduceRadius(string tag = "Tree")
@@ -211,9 +209,10 @@ class Disruption : MonoBehaviour
 
     public bool IsInZone(Vector3 position)
     {
-        Vector3 difference = position - transform.position;
+        Vector3 difference = position - transform.localPosition;
         difference.y = 0;
         float distance = difference.magnitude;
+
         return distance <= timeSinceBegining * disruptionSpeed;
     }
 }
