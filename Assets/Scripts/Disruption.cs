@@ -26,6 +26,7 @@ class Disruption : MonoBehaviour
 
     [Header("References")]
     public GameObject treePrefab;
+    public GameObject waterDropPrefab;
     
     // Dinamic objects
     GameObject disruptionSphere;
@@ -163,6 +164,11 @@ class Disruption : MonoBehaviour
         Instantiate(this.treePrefab, new Vector3(0f, 0f, 0f), Quaternion.identity, growingTree.transform).transform.tag = "GrowingTree";
         growingTree.transform.localPosition = position;
         growingTree.AddComponent<Growing>().setParameters(this.transform.parent.gameObject, this.gameObject);
+        GameObject water = Instantiate(this.waterDropPrefab, position, Quaternion.identity, growingTree.transform);
+        water.transform.localPosition = new Vector3(-2f, 60f, 0f);
+        water.transform.localScale = new Vector3(2.5f, 2.5f, 2.5f);
+        water.transform.rotation = Quaternion.identity;
+        
     }
 
     public void ReduceRadius(string tag = "Tree")
