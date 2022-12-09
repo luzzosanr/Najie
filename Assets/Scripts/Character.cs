@@ -40,9 +40,10 @@ public class Character : BaseCharacter
         // Get object where ray hits
         Physics.Raycast(ray, out RaycastHit hit);
         bool canPlant = false;
+
         if (hit.transform != null && hit.transform.tag == "Ground")
         {
-            canPlant = this.disruption.GetComponent<Disruption>().IsInSaveZone(hit.point);
+            canPlant = this.disruption.GetComponent<Disruption>().IsInSaveZone(hit.transform.InverseTransformPoint(hit.point));
         }
 
         if (canPlant)
@@ -53,7 +54,7 @@ public class Character : BaseCharacter
             if (Input.GetKeyDown(KeyCode.I))
             {
                 // Plant a tree
-                this.disruption.GetComponent<Disruption>().PlantTree(hit.point);
+                this.disruption.GetComponent<Disruption>().PlantTree(preview.transform.localPosition);
             }
         }
         else if (preview.activeSelf)
