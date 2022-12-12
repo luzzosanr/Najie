@@ -1,20 +1,26 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System;
 
 public class Character : BaseCharacter 
 {
     [Header("Disruption")]
-    public GameObject disruption;
+    public GameObject[] disruptions;
     GameObject lanterne;
 
     [Header("Plant")]
     public GameObject preview; // Preview of the tree
+
+    [Header("Time")]
+    double timeUtilNextDisruption = 0f;
 
 	// Use this for initialization
 	new void Start ()
     {
         base.Start();
         this.lanterne = this.transform.Find("Main Camera").Find("Lanterne").gameObject;
+        GenerateDisruptionCountdown();
 	}
 	
 	// Update is called once per frame
@@ -22,17 +28,58 @@ public class Character : BaseCharacter
     {
         base.Update();
 
-        if (this.disruption.activeSelf && this.disruption.GetComponent<Disruption>().type == "tree")
+        if (timeUtilNextDisruption <= 0)
         {
-            this.TreePlantationUpdate();
+            GenerateDisruptionCountdown();
+            SpawnRandomDisruption();
         }
-        else if (this.disruption.activeSelf && this.disruption.GetComponent<Disruption>().type == "sunflower")
+        else
         {
-            this.SunflowerPlantationUpdate();
+            timeUtilNextDisruption -= Time.deltaTime;
+        }
+
+        // for each disruption
+        foreach (GameObject disruption in this.disruptions)
+        {
+            if (disruption.activeSelf && disruption.GetComponent<Disruption>().type == "tree")
+            {
+                this.TreePlantationUpdate(disruption);
+            }
+            else if (disruption.activeSelf && disruption.GetComponent<Disruption>().type == "sunflower")
+            {
+                this.SunflowerPlantationUpdate(disruption);
+            }
         }
     }
 
-    void TreePlantationUpdate()
+    void SpawnRandomDisruption()
+    {
+        // Get all unactive disruptions
+        List<GameObject> disruptions = new List<GameObject>();
+        foreach (GameObject d in this.disruptions)
+        {
+            if (!d.activeSelf)
+            {
+                disruptions.Add(d);
+            }
+        }
+
+        // Log if no disruptions available, maybe add a penalty
+        if (disruptions.Count == 0)
+        {
+            Debug.Log("No more disruption available");
+            return;
+        }
+        
+        // Get a random disruption
+        int index = UnityEngine.Random.Range(0, disruptions.Count);
+        GameObject disruption = disruptions[index];
+
+        // Spawn it
+        disruption.SetActive(true);
+    }
+
+    void TreePlantationUpdate(GameObject disruption)
     {
         // Get position of the cursor in the world on the ground with raycast
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -43,7 +90,7 @@ public class Character : BaseCharacter
 
         if (hit.transform != null && hit.transform.tag == "Ground")
         {
-            canPlant = this.disruption.GetComponent<Disruption>().IsInSaveZone(hit.transform.InverseTransformPoint(hit.point));
+            canPlant = disruption.GetComponent<Disruption>().IsInSaveZone(hit.transform.InverseTransformPoint(hit.point));
         }
 
         if (canPlant)
@@ -54,7 +101,7 @@ public class Character : BaseCharacter
             if (Input.GetKeyDown(KeyCode.I))
             {
                 // Plant a tree
-                this.disruption.GetComponent<Disruption>().PlantTree(preview.transform.localPosition);
+                disruption.GetComponent<Disruption>().PlantTree(preview.transform.localPosition);
             }
         }
         else if (preview.activeSelf)
@@ -64,9 +111,9 @@ public class Character : BaseCharacter
         }
     }
 
-    void SunflowerPlantationUpdate()
+    void SunflowerPlantationUpdate(GameObject disruption)
     {
-        GameObject GetNearestSunflower(float max = float.MaxValue)
+        GameObject GetNearestSunflower(GameObject discruption, float max = float.MaxValue)
         {
             /**
             * Get the position of the nearest sunflower or null if too far
@@ -80,7 +127,7 @@ public class Character : BaseCharacter
                 Vector3 difference = sunflower.transform.position - transform.position;
                 difference.y = 0;
                 float distance = difference.magnitude;
-                if (distance < nearestDistance && sunflower.transform.Find("Tournesol_pas_ok").gameObject.activeSelf && this.disruption.GetComponent<Disruption>().IsInSaveZone(sunflower.transform.localPosition))
+                if (distance < nearestDistance && sunflower.transform.Find("Tournesol_pas_ok").gameObject.activeSelf && disruption.GetComponent<Disruption>().IsInSaveZone(sunflower.transform.localPosition + sunflower.transform.parent.localPosition))
                 {
                     nearestSunflower = sunflower;
                     nearestDistance = distance;
@@ -91,7 +138,7 @@ public class Character : BaseCharacter
         }
 
         // Set fog unity fog on
-        if (this.disruption.GetComponent<Disruption>().IsInZone(this.transform.localPosition))
+        if (disruption.GetComponent<Disruption>().IsInZone(transform.localPosition))
         {
             RenderSettings.fog = true;
         }
@@ -101,14 +148,14 @@ public class Character : BaseCharacter
         }
 
         // True if the player can heal a sunflower
-        bool canHeal = this.disruption.GetComponent<Disruption>().IsInSaveZone(this.transform.localPosition);
+        bool canHeal = disruption.GetComponent<Disruption>().IsInSaveZone(this.transform.localPosition);
 
         if (canHeal)
         {
             // Display the lamp
             this.lanterne.SetActive(true);
             // Heal the nearest sunflower
-            GameObject sunflower = GetNearestSunflower(60f);
+            GameObject sunflower = GetNearestSunflower(disruption, 60f);
             Healing compo = sunflower == null ? null : sunflower.GetComponent<Healing>();
             if (sunflower != null && compo == null)
             {
@@ -120,7 +167,7 @@ public class Character : BaseCharacter
                 if (compo.IsHealed())
                 {
                     Destroy(compo);
-                    this.disruption.GetComponent<Disruption>().ReduceRadius("Sunflower");
+                    disruption.GetComponent<Disruption>().ReduceRadius("Sunflower");
                 }
             }
         }
@@ -129,5 +176,34 @@ public class Character : BaseCharacter
             // Hide the lamp
             this.lanterne.SetActive(false);
         }
+    }
+
+    public void SetLanterneOff()
+    {
+        this.lanterne.SetActive(false);
+    }
+
+    void GenerateDisruptionCountdown()
+    {
+        /**
+        * Generate a disruption timer with a random time
+        * Normal distribution
+        * Sigma = 3
+        * Mean = 2
+        * Reshuffle if the time is below 0
+        */
+        
+        double time = 0;
+        double mean = 2;
+        double stdDev = 3;
+        while (time <= 0)
+        {
+            System.Random rand = new System.Random();
+            double u1 = 1.0-rand.NextDouble(); //uniform(0,1] random doubles
+            double u2 = 1.0-rand.NextDouble();
+            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
+            time = mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
+        }
+        this.timeUtilNextDisruption = time * 60;
     }
 }

@@ -13,16 +13,15 @@ class Disruption : MonoBehaviour
     * - Zone: Zone where the disruption is active (not an object, defined by the radius), y isn't taken into account
     */
 
-    [Header("Parameters")]
+    [Header("Rendering parameters")]
     public float sphereRadius;
     public float sphereExplosionSpeed;
-    public float disruptionSpeed;
-    public float plantableDistance; // Proportion of the radius where seeds are plantable
-    public float reductionFactor; // Factor by which the radius is reduced when a tree is planted
-    public float minTime; // TimeSinceBegining that if lower, disruption is destroyed
-    public float maxTime; // TimeSinceBegining can't go over this value
-    public float initTime; // TimeSinceBegining at the beginning of the disruption
-    public string type;
+
+    [Header("Disruption parameters")]
+    public string type; // Type of disruption (tree, sunflower, etc.)
+    public float disruptionSpeed; // Speed at which the disruption spreads
+    public float healingZone; // Proportion of the radius where seeds are plantable or sunflower healable
+    public float reductionFactor; // Proportion of the disruption radius being kept when reduced
 
     [Header("References")]
     public GameObject treePrefab;
@@ -33,7 +32,10 @@ class Disruption : MonoBehaviour
     GameObject visualDisruption; // For testing purpose
 
     [Header("Variables")]
-    public float timeSinceBegining;
+    public float minTime; // TimeSinceBegining that if lower, disruption is destroyed
+    public float maxTime; // TimeSinceBegining can't go over this value
+    public float initTime; // TimeSinceBegining at the beginning of the disruption
+    public float timeSinceBegining; // Evolving time since the beginning of the disruption
 
     void Start()
     {
@@ -49,7 +51,8 @@ class Disruption : MonoBehaviour
 
     void OnDisable()
     {
-        // Code run whenever a player clears a disruption
+        RenderSettings.fog = false;
+        GameObject.FindGameObjectWithTag("Player").GetComponent<Character>().SetLanterneOff();
     }
 
     void Update()
@@ -81,7 +84,7 @@ class Disruption : MonoBehaviour
         // Destruction
         if (this.timeSinceBegining < minTime)
         {
-            Destroy(this.gameObject);
+            this.gameObject.SetActive(false);
         }
     }
 
@@ -153,7 +156,7 @@ class Disruption : MonoBehaviour
         Vector3 difference = position - transform.localPosition;
         difference.y = 0;
         float distance = difference.magnitude;
-        return distance <= timeSinceBegining * disruptionSpeed && distance > timeSinceBegining * disruptionSpeed * (1 - plantableDistance);
+        return distance <= timeSinceBegining * disruptionSpeed && distance > timeSinceBegining * disruptionSpeed * (1 - healingZone);
     }
 
     public void PlantTree(Vector3 position)
