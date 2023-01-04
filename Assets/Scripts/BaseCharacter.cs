@@ -38,12 +38,12 @@ public class BaseCharacter : MonoBehaviour
     protected void Update()
     {        
         //Run with a key
-        if (Input.GetKeyDown(KeyCode.Q) && !isSprinting)
+        if (Input.GetKeyDown(KeyCode.A) && !isSprinting)
         {
             isSprinting = true;
             MovementSpeed *= 2;
         }
-        else if (Input.GetKeyDown(KeyCode.Q) && isSprinting)
+        else if (Input.GetKeyDown(KeyCode.A) && isSprinting)
         {
             isSprinting = false;
             MovementSpeed /= 2;
