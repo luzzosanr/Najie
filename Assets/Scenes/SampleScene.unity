@@ -10297,7 +10297,6 @@ Transform:
   - {fileID: 923453492}
   - {fileID: 1252612899}
   - {fileID: 1254250805}
-  - {fileID: 1899073434}
   m_Father: {fileID: 853131479}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: -23.728, y: 33.086, z: -14.625}
@@ -14993,7 +14992,8 @@ Transform:
   m_LocalPosition: {x: -11.1, y: 171.8, z: 54.6}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1899073434}
   m_Father: {fileID: 875634387}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -15235,12 +15235,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1260774826}
   m_LocalRotation: {x: 0.23094185, y: -0.25129825, z: 0.061341643, w: 0.93795115}
-  m_LocalPosition: {x: 7.1, y: 172.1, z: 95.4}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.019999947, y: -0.07599975, z: 0.0009999084}
+  m_LocalScale: {x: 0.01, y: 0.010000001, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2506575116480787545}
-  m_RootOrder: 3
+  m_Father: {fileID: 3791626161851025222}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1260774828
 AudioSource:
@@ -15260,7 +15260,7 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 256
+  Priority: 0
   DopplerLevel: 1
   MinDistance: 150
   MaxDistance: 375
@@ -22428,12 +22428,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1899073433}
   m_LocalRotation: {x: 0.23094185, y: -0.25129825, z: 0.061341643, w: 0.93795115}
-  m_LocalPosition: {x: -33.6, y: 172, z: 69.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.22500047, y: 0.002000122, z: 0.14899985}
+  m_LocalScale: {x: 0.01, y: 0.010000001, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 875634387}
-  m_RootOrder: 3
+  m_Father: {fileID: 1254250805}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1899073435
 AudioSource:
@@ -22453,7 +22453,7 @@ AudioSource:
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 256
+  Priority: 0
   DopplerLevel: 1
   MinDistance: 150
   MaxDistance: 375
@@ -27741,7 +27741,6 @@ Transform:
   - {fileID: 1671229291}
   - {fileID: 2506575115779930289}
   - {fileID: 3791626161851025222}
-  - {fileID: 1260774827}
   m_Father: {fileID: 853131479}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: -23.728, y: 33.086, z: -14.625}
@@ -28189,7 +28188,8 @@ Transform:
   m_LocalPosition: {x: 5.1, y: 179.7, z: 95.3}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1260774827}
   m_Father: {fileID: 2506575116480787545}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
