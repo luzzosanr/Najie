@@ -8,25 +8,67 @@ public class Character : BaseCharacter
     [Header("Disruption")]
     public GameObject[] disruptions;
     GameObject lanterne;
+    int clearedDisruptions = 0;
 
     [Header("Plant")]
     public GameObject preview; // Preview of the tree
 
     [Header("Time")]
-    double timeUtilNextDisruption = 0f;
+    public double timeUtilNextDisruption = 0f;
+    float timeUtilWeedHealing = 5f;
+
+    [Header("Beginning and end of the game")]
+    public GameObject worm;
+    public GameObject beginningCanvas;
+    public GameObject endCanvas;
+    int beginningOrEnd = 0; // 0 = beginning, 1 = playing, 2 = end
 
 	// Use this for initialization
 	new void Start ()
     {
         base.Start();
         this.lanterne = this.transform.Find("Main Camera").Find("Lanterne").gameObject;
-        GenerateDisruptionCountdown();
 	}
 	
 	// Update is called once per frame
 	new void Update ()
     {
         base.Update();
+
+        if (beginningOrEnd == 0)
+        {
+            float distanceFromWorm = (worm.transform.position - this.transform.position).magnitude;
+            if (distanceFromWorm < 50f)
+            {
+                beginningCanvas.SetActive(true);
+            }
+            else
+            {
+                beginningCanvas.SetActive(false);
+            }
+
+            // If the player press return, start the game
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                StartGame();
+            }
+
+            return;
+        }
+        else if (beginningOrEnd == 2)
+        {
+            float distanceFromWorm = (worm.transform.position - this.transform.position).magnitude;
+            if (distanceFromWorm < 50f)
+            {
+                endCanvas.SetActive(true);
+            }
+            else
+            {
+                endCanvas.SetActive(false);
+            }
+
+            return;
+        }
 
         if (timeUtilNextDisruption <= 0)
         {
@@ -49,7 +91,19 @@ public class Character : BaseCharacter
             {
                 this.SunflowerPlantationUpdate(disruption);
             }
+            else if (disruption.activeSelf && disruption.GetComponent<Disruption>().type == "weeds")
+            {
+                this.WeedHealingUpdate(disruption);
+            }
         }
+    }
+
+    void StartGame()
+    {
+        beginningCanvas.SetActive(false);
+        worm.SetActive(false);
+        timeUtilNextDisruption = 0f;
+        beginningOrEnd = 1;
     }
 
     void SpawnRandomDisruption()
@@ -178,6 +232,22 @@ public class Character : BaseCharacter
         }
     }
 
+    void WeedHealingUpdate(GameObject disruption)
+    {
+        bool canHeal = disruption.GetComponent<Disruption>().IsInSaveZone(this.transform.localPosition);
+
+        if (canHeal)
+        {
+            this.timeUtilWeedHealing -= Time.deltaTime;
+        }
+
+        if (this.timeUtilWeedHealing <= 0)
+        {
+            this.timeUtilWeedHealing = 5f;
+            disruption.GetComponent<Disruption>().ReduceRadius("Weed");
+        }
+    }
+
     public void SetLanterneOff()
     {
         this.lanterne.SetActive(false);
@@ -195,7 +265,7 @@ public class Character : BaseCharacter
         
         double time = 0;
         double mean = 2;
-        double stdDev = 3;
+        double stdDev = 1.5;
         while (time <= 0)
         {
             System.Random rand = new System.Random();
@@ -205,5 +275,19 @@ public class Character : BaseCharacter
             time = mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
         }
         this.timeUtilNextDisruption = time * 60;
+    }
+
+    public void ClearDisruption()
+    {
+        this.clearedDisruptions += 1;
+        if (this.clearedDisruptions >= 6)
+        {
+            foreach (GameObject d in this.disruptions)
+            {
+                d.SetActive(false);
+            }
+            this.beginningOrEnd = 2;
+            this.worm.SetActive(true);
+        }
     }
 }

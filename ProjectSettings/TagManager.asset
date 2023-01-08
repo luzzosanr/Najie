@@ -8,6 +8,7 @@ TagManager:
   - Ground
   - Sunflower
   - GrowingTree
+  - Weed
   layers:
   - Default
   - TransparentFX

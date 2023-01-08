@@ -42,7 +42,7 @@ class Disruption : MonoBehaviour
     {
         this.disruptionSphere = this.transform.Find("Sphere").gameObject;
         
-        //this.CreateVisualDisruption();
+        // this.CreateVisualDisruption();
     }
 
     void OnEnable()
@@ -76,7 +76,7 @@ class Disruption : MonoBehaviour
         // Update sphere
         this.disruptionSphere.transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius) * 2 * (1 + timeSinceBegining * sphereExplosionSpeed);
         // Update visual disruption
-        //this.UpdateVisualDisruption();
+        // this.UpdateVisualDisruption();
 
         // Updates depending of type of disruption
         if (type == "tree")
@@ -87,10 +87,15 @@ class Disruption : MonoBehaviour
         {
             this.SunflowersUpdate();
         }
+        else if (type == "weeds")
+        {
+            this.WeedsUpdate();
+        }
 
         // Destruction
         if (this.timeSinceBegining < minTime)
         {
+            GameObject.FindGameObjectWithTag("Player").GetComponent<Character>().ClearDisruption();
             this.gameObject.SetActive(false);
         }
     }
@@ -129,6 +134,34 @@ class Disruption : MonoBehaviour
             else if (difference.magnitude < timeSinceBegining * disruptionSpeed)
             {
                 this.SetSunflowerAsDead(sunflower);
+            }
+        }
+    }
+
+    void WeedsUpdate()
+    {
+        // Set all weeds in range of disruption as dead
+        List<GameObject> weeds = new List<GameObject>();
+
+        foreach (GameObject obj in Resources.FindObjectsOfTypeAll<GameObject>())
+        {
+            if (obj.CompareTag("Weed"))
+            {
+                weeds.Add(obj);
+            }
+        }
+
+        foreach (GameObject weed in weeds)
+        {
+            Vector3 difference = weed.transform.position - transform.position;
+            difference.y = 0;
+            if (this.timeSinceBegining < minTime)
+            {
+                weed.SetActive(false);
+            }
+            else if (difference.magnitude < timeSinceBegining * disruptionSpeed)
+            {
+                weed.SetActive(true);
             }
         }
     }
@@ -200,6 +233,10 @@ class Disruption : MonoBehaviour
                 else if (tag == "Sunflower")
                 {
                     this.SetSunflowerAsAlive(obj);
+                }
+                else if (tag == "Weed")
+                {
+                    obj.SetActive(false);
                 }
             }
         }
