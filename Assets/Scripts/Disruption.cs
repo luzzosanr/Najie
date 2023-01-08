@@ -26,6 +26,7 @@ class Disruption : MonoBehaviour
     [Header("References")]
     public GameObject treePrefab;
     public GameObject waterDropPrefab;
+    public GameObject cache; // Cache of the rift
     
     // Dinamic objects
     GameObject disruptionSphere;
@@ -47,12 +48,18 @@ class Disruption : MonoBehaviour
     void OnEnable()
     {
         this.timeSinceBegining = this.initTime;
+
+        //Disable the cache
+        this.cache.SetActive(false);
     }
 
     void OnDisable()
     {
         RenderSettings.fog = false;
         GameObject.FindGameObjectWithTag("Player").GetComponent<Character>().SetLanterneOff();
+
+        //Enable the cache
+        this.cache.SetActive(true);
     }
 
     void Update()
