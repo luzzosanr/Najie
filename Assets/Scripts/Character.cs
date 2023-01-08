@@ -8,6 +8,7 @@ public class Character : BaseCharacter
     [Header("Disruption")]
     public GameObject[] disruptions;
     GameObject lanterne;
+    GameObject bonbonne;
     int clearedDisruptions = 0;
 
     [Header("Plant")]
@@ -28,6 +29,7 @@ public class Character : BaseCharacter
     {
         base.Start();
         this.lanterne = this.transform.Find("Main Camera").Find("Lanterne").gameObject;
+        this.bonbonne = this.transform.Find("Main Camera").Find("bonbonne").gameObject;
 	}
 	
 	// Update is called once per frame
@@ -152,7 +154,8 @@ public class Character : BaseCharacter
             // Display a preview
             preview.transform.position = hit.point;
             preview.SetActive(true);
-            if (Input.GetKeyDown(KeyCode.I))
+            // With left click, plant a tree
+            if (Input.GetMouseButtonDown(0))
             {
                 // Plant a tree
                 disruption.GetComponent<Disruption>().PlantTree(preview.transform.localPosition);
@@ -238,13 +241,20 @@ public class Character : BaseCharacter
 
         if (canHeal)
         {
+            this.bonbonne.SetActive(true);
+
             this.timeUtilWeedHealing -= Time.deltaTime;
+        }
+        else if (this.bonbonne.activeSelf)
+        {
+            this.bonbonne.SetActive(false);
         }
 
         if (this.timeUtilWeedHealing <= 0)
         {
             this.timeUtilWeedHealing = 5f;
             disruption.GetComponent<Disruption>().ReduceRadius("Weed");
+            this.bonbonne.SetActive(false);
         }
     }
 
