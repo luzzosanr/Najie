@@ -41,7 +41,7 @@ class Disruption : MonoBehaviour
     {
         this.disruptionSphere = this.transform.Find("Sphere").gameObject;
         
-        this.CreateVisualDisruption();
+        //this.CreateVisualDisruption();
     }
 
     void OnEnable()
@@ -69,7 +69,7 @@ class Disruption : MonoBehaviour
         // Update sphere
         this.disruptionSphere.transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius) * 2 * (1 + timeSinceBegining * sphereExplosionSpeed);
         // Update visual disruption
-        this.UpdateVisualDisruption();
+        //this.UpdateVisualDisruption();
 
         // Updates depending of type of disruption
         if (type == "tree")
