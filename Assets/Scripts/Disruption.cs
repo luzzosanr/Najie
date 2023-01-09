@@ -215,9 +215,21 @@ class Disruption : MonoBehaviour
     }
 
     public void ReduceRadius(string tag = "Tree")
-    {
-        this.timeSinceBegining *= this.reductionFactor;
-        
+    {   
+        if (tag == "tree")
+        {
+            this.timeSinceBegining *= this.reductionFactor;
+        }
+        else if (tag == "Sunflower")
+        {
+            this.timeSinceBegining = this.reductionFactor * ( this.timeSinceBegining - 10f);
+        }
+        else if (tag == "Weed")
+        {
+            this.timeSinceBegining = this.reductionFactor * ( this.timeSinceBegining - 3f);
+        }
+
+
         // Set all tree not in range as alive
         GameObject[] objects = GameObject.FindGameObjectsWithTag(tag);
         foreach (GameObject obj in objects)
