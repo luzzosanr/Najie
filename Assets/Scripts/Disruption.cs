@@ -216,9 +216,9 @@ class Disruption : MonoBehaviour
 
     public void ReduceRadius(string tag = "Tree")
     {   
-        if (tag == "tree")
+        if (tag == "Tree")
         {
-            this.timeSinceBegining *= this.reductionFactor;
+            this.timeSinceBegining = this.reductionFactor * ( this.timeSinceBegining - 5f);
         }
         else if (tag == "Sunflower")
         {
